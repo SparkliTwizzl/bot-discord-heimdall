@@ -50,16 +50,17 @@
 ##        await message.channel.send('nah fuck you leave me alone')
 ##
 ##
-##client.run('NTM2NjY4NDY3NzY0Mzk2MDU3.GffIMu.BdYYY2k13L0D1y-_R9pdeZVyszg1t0St-iCbqY')
+##client.run(os.getenv('BOT_DISCORD_HEIMDALL_TOKEN'))
 
 
 
 
 import interactions
+import os
 
 
 prefix = '%'
-bot = interactions.Client(token='NTM2NjY4NDY3NzY0Mzk2MDU3.GffIMu.BdYYY2k13L0D1y-_R9pdeZVyszg1t0St-iCbqY')
+bot = interactions.Client(token=os.getenv('BOT_DISCORD_HEIMDALL_TOKEN'))
 
 
 @bot.command(
