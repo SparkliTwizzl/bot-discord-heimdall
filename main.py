@@ -11,7 +11,7 @@ bot = interactions.Client(token=os.getenv("BOT_DISCORD_HEIMDALL_TOKEN")) # any m
 #     description="description",
 # )
 # async def heimdall_message_command(ctx: interactions.CommandContext):
-#     await ctx.send("response")
+#     await ctx.send("message command invoked")
 
 
 # context menu command (right click menu)
