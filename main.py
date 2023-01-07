@@ -25,4 +25,24 @@ class bot_heimdall:
     #     await ctx.send(f"context menu command invoked on user {ctx.target.user.username}")
 
 
+    # SelectMenu component command
+    @bot.command(
+        type=interactions.SelectMenu,
+        name="heimdall-select-menu-command"
+    )
+    async def heimdall_select_menu_command(ctx):
+        menuOption0 = interactions.SelectOption(
+            label="option 0",
+            custom_id="option0"
+        )
+        menuOption1 = interactions.SelectOption(
+            label="option 1",
+            custom_id="option1"
+        )
+        menu = interactions.SelectMenu(
+            components=[menuOption0, menuOption1]
+        )
+        await ctx.send("SelectMenu command invoked", components=menu)
+
+
     bot.start()
