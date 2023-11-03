@@ -1,80 +1,83 @@
-﻿using System;
-using Discord;
+﻿using Discord;
+using Discord.Net;
 using Discord.WebSocket;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using System;
+using System.Threading.Tasks;
 
 
 namespace Heimdall.Application
 {
 	class Bot
 	{
-		private readonly DiscordSocketClient _client;
-		private readonly IConfiguration _config;
-
-
-		public static Task Main(string[] args) => new Bot().MainAsync();
-
-		public async Task MainAsync(string[] args) {}
-
+		private readonly DiscordSocketClient client;
+		private readonly IConfiguration config;
+		private const ulong guildID = 0;
 
 		public Bot()
 		{
-			_client = new DiscordSocketClient();
+			client = new DiscordSocketClient();
+			client.Log += Log;
+			client.Ready += ClientReady;
 
-			//Hook into log event and write it out to the console
-			_client.Log += Log;
-
-			//Hook into the client ready event
-			_client.Ready += Ready;
-
-			//Hook into the message received event, this is how we handle the hello world example
-			_client.MessageReceived += MessageReceivedAsync;
-
-			//Create the configuration
 			var _builder = new ConfigurationBuilder()
-				.SetBasePath(AppContext.BaseDirectory)
-				.AddJsonFile(path: "config.json");
-			_config = _builder.Build();
+				.SetBasePath( AppContext.BaseDirectory )
+				.AddJsonFile( path: "config.json" );
+			config = _builder.Build();
 		}
 
+
+		public static Task Main( string[] args ) => new Bot().MainAsync();
 
 		public async Task MainAsync()
 		{
-			//This is where we get the Token value from the configuration file
-			await _client.LoginAsync(TokenType.Bot, _config["Token"]);
-			await _client.StartAsync();
-
-			// Block the program until it is closed.
-			await Task.Delay(-1);
+			await client.LoginAsync( TokenType.Bot, config[ "Token" ] );
+			await client.StartAsync();
+			await Task.Delay( -1 );
 		}
 
+		public async Task MainAsync( string[] args ) { }
 
-		private Task Log(LogMessage log)
+
+		private Task Log( LogMessage log )
 		{
-			Console.WriteLine(log.ToString());
+			Console.WriteLine( log.ToString() );
 			return Task.CompletedTask;
 		}
 
-		//I wonder if there's a better way to handle commands (spoiler: there is :))
-		private async Task MessageReceivedAsync(SocketMessage message)
-		{
-			//This ensures we don't loop things by responding to ourselves (as the bot)
-			if (message.Author.Id == _client.CurrentUser.Id)
-			{
-				return;
-			}
 
-			if (message.Content == ".hello")
+		public async Task ClientReady()
+		{
+			var guild = client.GetGuild( guildID );
+			var guildCommandPing = new SlashCommandBuilder()
+				.WithName( "ping" )
+				.WithDescription( "ping pong" );
+
+			// Let's do our global command
+			//var globalCommand = new SlashCommandBuilder();
+			//globalCommand.WithName( "first-global-command" );
+			//globalCommand.WithDescription( "This is my first global slash command" );
+
+			client.SlashCommandExecuted += GuildSlashCommandPingHandler;
+
+			try
 			{
-				await message.Channel.SendMessageAsync("world!");
+				await guild.CreateApplicationCommandAsync( guildCommandPing.Build() );
+			}
+			catch ( ApplicationCommandException exception )
+			{
+				var json = JsonConvert.SerializeObject( exception.Errors, Formatting.Indented );
+				Console.WriteLine( json );
 			}
 		}
 
-		private Task Ready()
+
+		private async Task GuildSlashCommandPingHandler( SocketSlashCommand command )
 		{
-			Console.WriteLine($"Connected as -> [] :)");
-			return Task.CompletedTask;
+			await command.RespondAsync( "pong" );
 		}
 	}
 }
+
+
